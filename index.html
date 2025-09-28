@@ -66,15 +66,15 @@
         signature: signatureData
       };
 
-      const webhookURL = "https://script.google.com/macros/s/AKfycbwMUvcP5KOPvl9-ftmmun49Diti3F-p05m3vkR5UMS0plWtWIZZ319yHa8H6zZLbDq0/exec";
+      const webhookURL = "https://script.google.com/macros/s/AKfycbxHfrjOEj4TZYxDfdey_Atse4GqLsI83nIKS41AtlyjqcSZhLgkGlSKC_nlIMEc1-mg/exec";
 
       try {
         const res = await fetch(webhookURL, {
           method: "POST",
-          body: JSON.stringify(data),
           headers: {
             "Content-Type": "application/json"
-          }
+          },
+          body: JSON.stringify(data)
         });
 
         const result = await res.json();
