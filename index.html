@@ -1,1 +1,95 @@
-hello world
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>정보 수집 폼</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    label, input, textarea { display: block; margin-bottom: 10px; width: 100%; }
+    canvas { border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h2>정보 입력 폼</h2>
+  <form id="infoForm">
+    <label>이름 <input type="text" name="name" required></label>
+    <label>전화번호 <input type="tel" name="phone" required></label>
+    <label>주소 <input type="text" name="address" required></label>
+    <label>
+      <input type="checkbox" name="agree" required>
+      개인정보 수집에 동의합니다
+    </label>
+    <p>서명:</p>
+    <canvas id="signature" width="300" height="100"></canvas>
+    <button type="button" onclick="clearSignature()">서명 지우기</button><br><br>
+    <button type="submit">제출</button>
+  </form>
+
+  <script>
+    const canvas = document.getElementById("signature");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+
+    canvas.addEventListener("mousedown", () => drawing = true);
+    canvas.addEventListener("mouseup", () => {
+      drawing = false;
+      ctx.beginPath();
+    });
+    canvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#000";
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    function clearSignature() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    document.getElementById("infoForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const signatureData = canvas.toDataURL(); // Base64 string
+
+      const data = {
+        name: formData.get("name"),
+        phone: formData.get("phone"),
+        address: formData.get("address"),
+        agree: formData.get("agree") === "on",
+        signature: signatureData
+      };
+
+      const webhookURL = "https://script.google.com/macros/s/...../exec"; // ← 복사한 Web App URL
+
+      try {
+        const res = await fetch(webhookURL, {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        const result = await res.json();
+        if (result.result === "success") {
+          alert("제출 완료!");
+          this.reset();
+          clearSignature();
+        } else {
+          alert("제출 실패");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("에러 발생!");
+      }
+    });
+  </script>
+</body>
+</html>
